@@ -19,13 +19,6 @@ func main() {
 	}
 	// Initialising memory
 	memory := make(map[int]int)
-	for i, v := range numbers {
-		memory[i] = v
-	}
-
-	// replacing as instructed:
-	// numbers[1] = 12
-	// numbers[2] = 2
 	inc := 4
 	goal := 19690720
 	var (
@@ -42,14 +35,12 @@ func main() {
 			var i int
 		loop:
 			for {
+				pos1, pos2, loc := memory[i+1], memory[i+2], memory[i+3]
 				switch memory[i] {
 				case 1:
-					pos1, pos2, loc := memory[i+1], memory[i+2], memory[i+3]
 					memory[loc] = memory[pos1] + memory[pos2]
 				case 2:
-					pos1, pos2, loc := memory[i+1], memory[i+2], memory[i+3]
 					memory[loc] = memory[pos1] * memory[pos2]
-
 				case 99:
 					break loop
 				}
@@ -62,9 +53,6 @@ func main() {
 				break
 			}
 		}
-
-		// fmt.Println(memory)
 	}
-
 	fmt.Println(100*noun + verb)
 }
