@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"strconv"
+	"strings"
 )
 
 const (
@@ -21,7 +22,7 @@ func main() {
 	bytesArr := bytes.Split(content, []byte(","))
 	memory := make(map[int]int)
 	for i := 0; i < len(bytesArr); i++ {
-		n, _ := strconv.Atoi(string(bytesArr[i]))
+		n, _ := strconv.Atoi(strings.TrimSpace(string(bytesArr[i])))
 		memory[i] = n
 	}
 	var (
