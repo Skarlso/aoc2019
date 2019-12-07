@@ -18,6 +18,9 @@ func main() {
 	input := os.Args[2]
 	in, _ := strconv.Atoi(input)
 	content, _ := ioutil.ReadFile(filename)
+	if content[len(content)-1] == 0x0a {
+		content = content[:len(content)-1]
+	}
 	bytesArr := bytes.Split(content, []byte(","))
 	memory := make(map[int]int)
 	for i := 0; i < len(bytesArr); i++ {
