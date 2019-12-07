@@ -23,31 +23,34 @@ func main() {
 	nodes := make(map[string]*node)
 	for _, b := range bytesArr {
 		split := bytes.Split(b, []byte(")"))
+		s1 := bytes.TrimSpace(split[0])
+		s2 := bytes.TrimSpace(split[1])
 		// check if it exists
-		if v, ok := nodes[string(split[0])]; ok {
+		if v, ok := nodes[string(s1)]; ok {
 			// let's hope that the input doesn't contain duplicates
 			// a child will not have multiple parents
-			if c, cok := nodes[string(split[1])]; cok {
-				// since I'm going sequentially, I have to retro fit existing child nodes.
+			if c, cok := nodes[string(s2)]; cok {
 				c.parent = v
+				v.children = append(v.children, c)
 			} else {
-				c = &node{v: split[1]}
+				c = &node{v: s2}
 				c.parent = v
 				v.children = append(v.children, c)
 				nodes[string(c.v)] = c
 			}
 		} else {
-			p := &node{v: split[0]}
-			if c, cok := nodes[string(split[1])]; cok {
+			p := &node{v: s1}
+			if c, cok := nodes[string(s2)]; cok {
 				// since I'm going sequentially, I have to retro fit existing child nodes.
 				c.parent = p
+				p.children = append(p.children, c)
 			} else {
-				c = &node{v: split[1]}
+				c = &node{v: s2}
 				c.parent = p
 				p.children = append(p.children, c)
 				nodes[string(c.v)] = c
 			}
-			nodes[string(split[0])] = p
+			nodes[string(s1)] = p
 		}
 	}
 	travers(nodes)
@@ -80,13 +83,7 @@ func travers(m map[string]*node) {
 		nextUp := queue[0]
 		queue = queue[1:]
 		sum += countBack(nextUp)
-		//fmt.Println("node: ", string(nextUp.v))
-		//if nextUp.parent != nil {
-		//	fmt.Println("Parent: ", string(nextUp.parent.v))
-		//}
-		//fmt.Println("------")
 		if len(nextUp.children) > 0 {
-			//fmt.Printf("Number of children for node %q is %d\n", string(nextUp.v), len(nextUp.children))
 			for _, child := range nextUp.children {
 				queue = append(queue, child)
 			}
