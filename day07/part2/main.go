@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"os"
 	"strconv"
-	"time"
 )
 
 const (
@@ -62,18 +61,18 @@ func main() {
 	sequences := permutation(sequence)
 
 	var max int
-	m := memClone(memory)
-	a := &machine{memory: m, inc: 4}
-	m = memClone(memory)
-	b := &machine{memory: m, inc: 4}
-	m = memClone(memory)
-	c := &machine{memory: m, inc: 4}
-	m = memClone(memory)
-	d := &machine{memory: m, inc: 4}
-	m = memClone(memory)
-	e := &machine{memory: m, inc: 4}
-
 	for _, seq := range sequences {
+		m := memClone(memory)
+		a := &machine{memory: m, inc: 4}
+		m = memClone(memory)
+		b := &machine{memory: m, inc: 4}
+		m = memClone(memory)
+		c := &machine{memory: m, inc: 4}
+		m = memClone(memory)
+		d := &machine{memory: m, inc: 4}
+		m = memClone(memory)
+		e := &machine{memory: m, inc: 4}
+
 		a.input = []int{seq[0]}
 		b.input = []int{seq[1]}
 		c.input = []int{seq[2]}
@@ -87,24 +86,24 @@ func main() {
 		for !allDone {
 			a.input = append(a.input, eout)
 			out, allDone = a.processProgram()
-			fmt.Println("a: ", a)
+			//fmt.Println("a: ", a)
 			b.input = append(b.input, out)
 			out, allDone = b.processProgram()
-			fmt.Println("b: ", b)
+			//fmt.Println("b: ", b)
 			c.input = append(c.input, out)
 			out, allDone = c.processProgram()
-			fmt.Println("c: ", c)
+			//fmt.Println("c: ", c)
 			d.input = append(d.input, out)
 			out, allDone = d.processProgram()
-			fmt.Println("d: ", d)
+			//fmt.Println("d: ", d)
 			e.input = append(e.input, out)
 			eout, allDone = e.processProgram()
-			fmt.Println("e: ", e)
+			//fmt.Println("e: ", e)
 			if eout > max {
 				max = eout
 			}
 		}
-		time.Sleep(1 * time.Second)
+		//time.Sleep(1 * time.Second)
 	}
 	fmt.Println("Max output: ", max)
 }
