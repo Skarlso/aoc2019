@@ -26,13 +26,15 @@ const (
 
 type machine struct {
 	position int
-	memory   map[int]int
-	input    []int
-	output   int
+	memory   map[int]int64
+	input    []int64
+	output   int64
+	name     string
 }
 
 func (m machine) String() string {
-	return fmt.Sprintf("position: %d; memory: %+v; input: %+v; output: %d; inputIndex: %d",
+	return fmt.Sprintf("Name: %s; position: %d; memory: %+v; input: %+v; output: %d; inputIndex: %d",
+		m.name,
 		m.position,
 		m.memory,
 		m.input,
@@ -47,10 +49,10 @@ func main() {
 	}
 	bytesArr := bytes.Split(content, []byte(","))
 
-	memory := make(map[int]int)
+	memory := make(map[int]int64)
 	for i := 0; i < len(bytesArr); i++ {
 		n, _ := strconv.Atoi(string(bytesArr[i]))
-		memory[i] = n
+		memory[i] = int64(n)
 	}
 
 	sequence := []int{0, 1, 2, 3, 4}
@@ -59,21 +61,21 @@ func main() {
 	var max int
 	for _, seq := range sequences {
 		m := memClone(memory)
-		a := &machine{memory: m}
+		a := &machine{name: "a", memory: m}
 		m = memClone(memory)
-		b := &machine{memory: m}
+		b := &machine{name: "b", memory: m}
 		m = memClone(memory)
-		c := &machine{memory: m}
+		c := &machine{name: "c", memory: m}
 		m = memClone(memory)
-		d := &machine{memory: m}
+		d := &machine{name: "d", memory: m}
 		m = memClone(memory)
-		e := &machine{memory: m}
+		e := &machine{name: "e", memory: m}
 
-		a.input = []int{seq[0]}
-		b.input = []int{seq[1]}
-		c.input = []int{seq[2]}
-		d.input = []int{seq[3]}
-		e.input = []int{seq[4]}
+		a.input = []int64{int64(seq[0])}
+		b.input = []int64{int64(seq[1])}
+		c.input = []int64{int64(seq[2])}
+		d.input = []int64{int64(seq[3])}
+		e.input = []int64{int64(seq[4])}
 		var (
 			allDone bool
 			out     []int
@@ -106,8 +108,8 @@ func main() {
 	fmt.Println("Max output: ", max)
 }
 
-func memClone(memory map[int]int) map[int]int {
-	m := make(map[int]int)
+func memClone(memory map[int]int64) map[int]int64 {
+	m := make(map[int]int64)
 	for k, v := range memory {
 		m[k] = v
 	}
@@ -150,9 +152,11 @@ loop:
 			m.position += 4
 		case input:
 			if len(m.input) < 1 {
+				//fmt.Printf("%q run out of input... returning\n", m.name)
 				return out, false
 			}
 			var in int
+			fmt.Printf("In for %q is: %d\n", m.name, m.input)
 			in, m.input = m.input[0], m.input[1:]
 			m.memory[m.memory[m.position+1]] = in
 			m.position += 2
@@ -169,6 +173,7 @@ loop:
 				oout = m.memory[m.memory[m.position+1]]
 			}
 			out = append(out, oout)
+			fmt.Printf("Out of %q is: %+v\n", m.name, out)
 			m.position += 2
 		case jmp:
 			args := getArguments(2, m.position, modes, m.memory)
