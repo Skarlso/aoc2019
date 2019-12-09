@@ -25,22 +25,18 @@ const (
 )
 
 type machine struct {
-	position   int
-	memory     map[int]int
-	input      []int
-	output     int
-	inputIndex int
-	inc        int
+	position int
+	memory   map[int]int
+	input    []int
+	output   int
 }
 
 func (m machine) String() string {
-	return fmt.Sprintf("position: %d; memory: %+v; input: %+v; output: %d; inputIndex: %d; inc: %d",
+	return fmt.Sprintf("position: %d; memory: %+v; input: %+v; output: %d; inputIndex: %d",
 		m.position,
 		m.memory,
 		m.input,
-		m.output,
-		m.inputIndex,
-		m.inc)
+		m.output)
 }
 
 func main() {
@@ -63,15 +59,15 @@ func main() {
 	var max int
 	for _, seq := range sequences {
 		m := memClone(memory)
-		a := &machine{memory: m, inc: 4}
+		a := &machine{memory: m}
 		m = memClone(memory)
-		b := &machine{memory: m, inc: 4}
+		b := &machine{memory: m}
 		m = memClone(memory)
-		c := &machine{memory: m, inc: 4}
+		c := &machine{memory: m}
 		m = memClone(memory)
-		d := &machine{memory: m, inc: 4}
+		d := &machine{memory: m}
 		m = memClone(memory)
-		e := &machine{memory: m, inc: 4}
+		e := &machine{memory: m}
 
 		a.input = []int{seq[0]}
 		b.input = []int{seq[1]}
@@ -80,27 +76,29 @@ func main() {
 		e.input = []int{seq[4]}
 		var (
 			allDone bool
-			out     int
-			eout    int
+			out     []int
 		)
+		eout := []int{0}
 		for !allDone {
-			a.input = append(a.input, eout)
+			a.input = append(a.input, eout...)
 			out, allDone = a.processProgram()
 			//fmt.Println("a: ", a)
-			b.input = append(b.input, out)
+			b.input = append(b.input, out...)
 			out, allDone = b.processProgram()
 			//fmt.Println("b: ", b)
-			c.input = append(c.input, out)
+			c.input = append(c.input, out...)
 			out, allDone = c.processProgram()
 			//fmt.Println("c: ", c)
-			d.input = append(d.input, out)
+			d.input = append(d.input, out...)
 			out, allDone = d.processProgram()
 			//fmt.Println("d: ", d)
-			e.input = append(e.input, out)
+			e.input = append(e.input, out...)
 			eout, allDone = e.processProgram()
 			//fmt.Println("e: ", e)
-			if eout > max {
-				max = eout
+			if len(eout) == 1 {
+				if eout[0] > max {
+					max = eout[0]
+				}
 			}
 		}
 		//time.Sleep(1 * time.Second)
@@ -133,7 +131,7 @@ func permutation(xs []int) (permuts [][]int) {
 	return
 }
 
-func (m *machine) processProgram() (out int, done bool) {
+func (m *machine) processProgram() (out []int, done bool) {
 loop:
 	for {
 		opcode := m.memory[m.position]
@@ -145,15 +143,19 @@ loop:
 		case add:
 			args := getArguments(3, m.position, modes, m.memory)
 			m.memory[args[2]] = args[0] + args[1]
-			m.inc = 4
+			m.position += 4
 		case multi:
 			args := getArguments(3, m.position, modes, m.memory)
 			m.memory[args[2]] = args[0] * args[1]
-			m.inc = 4
+			m.position += 4
 		case input:
-			m.memory[m.memory[m.position+1]] = m.input[m.inputIndex]
-			m.inc = 2
-			m.inputIndex++
+			if len(m.input) < 1 {
+				return out, false
+			}
+			var in int
+			in, m.input = m.input[0], m.input[1:]
+			m.memory[m.memory[m.position+1]] = in
+			m.position += 2
 		case output:
 			var oout int
 			if len(modes) > 0 {
@@ -166,26 +168,22 @@ loop:
 			} else {
 				oout = m.memory[m.memory[m.position+1]]
 			}
-			out = oout
-			m.inc = 2
-			m.position += m.inc
-			return out, false
+			out = append(out, oout)
+			m.position += 2
 		case jmp:
 			args := getArguments(2, m.position, modes, m.memory)
 			if args[0] != 0 {
 				m.position = args[1]
-				m.inc = 0
 			} else {
-				m.inc = 3
+				m.position += 3
 			}
 			//fmt.Printf("5 i: %d args: %+v\n", i, args)
 		case jmpf:
 			args := getArguments(2, m.position, modes, m.memory)
 			if args[0] == 0 {
 				m.position = args[1]
-				m.inc = 0
 			} else {
-				m.inc = 3
+				m.position += 3
 			}
 			//fmt.Printf("6 i: %d args: %+v\n", i, args)
 		case less:
@@ -196,7 +194,7 @@ loop:
 				m.memory[args[2]] = 0
 			}
 			//fmt.Printf("7 i: %d args: %+v\n", i, args)
-			m.inc = 4
+			m.position += 4
 		case eq:
 			args := getArguments(3, m.position, modes, m.memory)
 			if args[0] == args[1] {
@@ -205,11 +203,12 @@ loop:
 				m.memory[args[2]] = 0
 			}
 			//fmt.Printf("8 i: %d args: %+v\n", i, args)
-			m.inc = 4
+			m.position += 4
 		case 99:
 			break loop
+		default:
+			m.position += 4
 		}
-		m.position += m.inc
 	}
 
 	return out, true
