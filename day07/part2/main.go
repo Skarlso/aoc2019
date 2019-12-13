@@ -24,7 +24,7 @@ func main() {
 		memory[i] = n
 	}
 
-	sequence := []int{0, 1, 2, 3, 4}
+	sequence := []int{5, 6, 7, 8, 9}
 	sequences := permutation(sequence)
 
 	var max int
@@ -53,8 +53,9 @@ func main() {
 		for !allDone {
 			a.Input = append(a.Input, eout...)
 			out, allDone = a.ProcessProgram()
-			//fmt.Println("a: ", a)
+			//fmt.Println("a out: ", out)
 			b.Input = append(b.Input, out...)
+			//fmt.Println("b input: ", b.Input)
 			out, allDone = b.ProcessProgram()
 			//fmt.Println("b: ", b)
 			c.Input = append(c.Input, out...)
