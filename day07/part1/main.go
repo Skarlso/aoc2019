@@ -6,6 +6,8 @@ import (
 	"io/ioutil"
 	"os"
 	"strconv"
+
+	"github.com/Skarlso/intcode"
 )
 
 const (
@@ -31,6 +33,12 @@ func main() {
 
 	sequence := []int{0, 1, 2, 3, 4}
 	sequences := permutation(sequence)
+
+	machineA := intcode.NewMachine()
+	machineB := intcode.NewMachine()
+	machineC := intcode.NewMachine()
+	machineD := intcode.NewMachine()
+	machineE := intcode.NewMachine()
 
 	var max int
 	for _, seq := range sequences {
