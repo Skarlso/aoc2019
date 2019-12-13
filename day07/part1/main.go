@@ -43,15 +43,25 @@ func main() {
 	var max int
 	for _, seq := range sequences {
 		m := memClone(memory)
+		machineA.Memory = m
+		machineA.Input = []int{seq[0], 0}
+		machineA.ProcessProgram()
 		out := processProgram("A", []int{seq[0], 0}, m)
 		m = memClone(memory)
+		machineB.Memory = m
+		machineB.Input = []int{seq[1], machineA.Output[0]}
 		out = processProgram("B", []int{seq[1], out}, m)
 		m = memClone(memory)
+		machineC.Memory = m
+		machineC.Input = []int{seq[2], machineB.Output[0]}
 		out = processProgram("C", []int{seq[2], out}, m)
 		m = memClone(memory)
+		machineD.Memory = m
+		machineD.Input = []int{seq[3], machineC.Output[0]}
 		out = processProgram("D", []int{seq[3], out}, m)
 		m = memClone(memory)
-		out = processProgram("E", []int{seq[4], out}, m)
+		machineE.Memory = m
+		machineE.Input = []int{seq[4], machineD.Output[0]}
 		if out > max {
 			max = out
 		}
