@@ -1,6 +1,6 @@
 #!/bin/zsh
 
-for i in {11..25}; do
+for i in {1..25}; do
     mkdir -p day$i && mkdir -p day$i/part1 day$i/part2
     (
         cd day$i/part1
