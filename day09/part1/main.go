@@ -25,6 +25,6 @@ func main() {
 	}
 
 	m := intcode.NewMachine(memory)
-	m.Input = []int{1}
+	m.Input = []int{6}
 	fmt.Println(m.ProcessProgram())
 }
