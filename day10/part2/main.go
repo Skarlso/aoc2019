@@ -36,15 +36,15 @@ func main() {
 		}
 		grid = append(grid, row)
 	}
-	mx := 26
-	my := 28
+	mx := len(grid)
+	my := len(grid[0])
 	seen := make(map[float64][]point)
 	as := make([]float64, 0)
 	for _, l := range meteorLocations {
 		if l.y != my || l.x != mx {
 			a := ((math.Atan2(float64(l.y-my), float64(l.x-mx))) * (180 / math.Pi))
 			// a := math.Floor(x*1000) / 1000
-			a = a + 90
+			a += 90
 			if a < 0 {
 				a += 360
 			}
