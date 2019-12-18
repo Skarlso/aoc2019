@@ -78,10 +78,8 @@ func (s sums) String() string {
 }
 
 // runPart1 returns the total energy in the system.
-func runPart2(copyMoons []*moon) int {
+func runPart2(moons []*moon) int {
 	// steps := 0
-	moons := make([]*moon, len(copyMoons))
-	copy(moons, copyMoons)
 	startM1 := *moons[0]
 	startM2 := *moons[1]
 	startM3 := *moons[2]
@@ -114,24 +112,7 @@ func runPart2(copyMoons []*moon) int {
 			moons[3].v == startM4.v &&
 			endXStep == 0 {
 			endXStep = steps
-			break
 		}
-		steps++
-	}
-	moons = make([]*moon, len(copyMoons))
-	copy(moons, copyMoons)
-	steps = 0
-	for {
-		for i := 0; i < len(moons); i++ {
-			for j := i + 1; j < len(moons); j++ {
-				moons[i].applyGravity(moons[j])
-			}
-		}
-
-		for _, m := range moons {
-			m.applyVelocity()
-		}
-
 		if moons[0].p.y == startM1.p.y &&
 			moons[0].v == startM1.v &&
 			moons[1].p.y == startM2.p.y &&
@@ -142,22 +123,6 @@ func runPart2(copyMoons []*moon) int {
 			moons[3].v == startM4.v &&
 			endYStep == 0 {
 			endYStep = steps
-			break
-		}
-		steps++
-	}
-	moons = make([]*moon, len(copyMoons))
-	copy(moons, copyMoons)
-	steps = 0
-	for {
-		for i := 0; i < len(moons); i++ {
-			for j := i + 1; j < len(moons); j++ {
-				moons[i].applyGravity(moons[j])
-			}
-		}
-
-		for _, m := range moons {
-			m.applyVelocity()
 		}
 
 		if moons[0].p.z == startM1.p.z &&
@@ -170,13 +135,15 @@ func runPart2(copyMoons []*moon) int {
 			moons[3].v == startM4.v &&
 			endZStep == 0 {
 			endZStep = steps
-			break
 		}
 		steps++
+
+		if endXStep > 0 && endYStep > 0 && endZStep > 0 {
+			break
+		}
 	}
 
 	fmt.Println(lcm(endXStep, endYStep, endZStep))
-	// Find LCM of all four steps.
 	return 0
 }
 
