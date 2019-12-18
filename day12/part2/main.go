@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"reflect"
+)
 
 type position struct {
 	x, y, z int
@@ -77,21 +80,69 @@ func (s sums) String() string {
 	return fmt.Sprintf("xSteps: %d; ySteps: %d, zSteps: %d", s.xSteps, s.ySteps, s.zSteps)
 }
 
+type ExtractFunc func(m *moon) []int
+
+func snapshot(moons []*moon, extractor ExtractFunc) [][]int {
+	results := make([][]int, 0)
+	for _, m := range moons {
+		results = append(results, extractor(m))
+	}
+	return results
+}
+
+type Initial struct {
+	Value   [][]int
+	Shot    ExtractFunc
+	Done    bool
+	Counter int
+}
+
+func NewInitial(moons []*moon, shot ExtractFunc) *Initial {
+	return &Initial{
+		Value:   snapshot(moons, shot),
+		Shot:    shot,
+		Done:    false,
+		Counter: 0,
+	}
+}
+
+func (c *Initial) Compare(moons []*moon) bool {
+	// we can say it's false to avoid calling SetDone again
+	// it's not cheating because statistically it's not true
+	// .... most of the time XD
+	if c.Done {
+		return false
+	}
+	return reflect.DeepEqual(snapshot(moons, c.Shot), c.Value)
+}
+
+func (c *Initial) SetDone(counter int) {
+	c.Counter = counter
+	c.Done = true
+}
+
+func allDone(initials []*Initial) bool {
+	for _, initial := range initials {
+		if !initial.Done {
+			return false
+		}
+	}
+	return true
+}
+
 // runPart1 returns the total energy in the system.
 func runPart2(moons []*moon) int {
-	// steps := 0
-	startM1 := *moons[0]
-	startM2 := *moons[1]
-	startM3 := *moons[2]
-	startM4 := *moons[3]
-
-	endXStep := 0
-	endYStep := 0
-	endZStep := 0
+	initials := []*Initial{
+		NewInitial(moons, func(m *moon) []int { return []int{m.p.x, m.v.x} }),
+		NewInitial(moons, func(m *moon) []int { return []int{m.p.y, m.v.y} }),
+		NewInitial(moons, func(m *moon) []int { return []int{m.p.z, m.v.z} }),
+	}
 
 	steps := 0
 
 	for {
+		steps++
+
 		for i := 0; i < len(moons); i++ {
 			for j := i + 1; j < len(moons); j++ {
 				moons[i].applyGravity(moons[j])
@@ -102,49 +153,24 @@ func runPart2(moons []*moon) int {
 			m.applyVelocity()
 		}
 
-		if moons[0].p.x == startM1.p.x &&
-			moons[0].v == startM1.v &&
-			moons[1].p.x == startM2.p.x &&
-			moons[1].v == startM2.v &&
-			moons[2].p.x == startM3.p.x &&
-			moons[2].v == startM3.v &&
-			moons[3].p.x == startM4.p.x &&
-			moons[3].v == startM4.v &&
-			endXStep == 0 {
-			endXStep = steps
-		}
-		if moons[0].p.y == startM1.p.y &&
-			moons[0].v == startM1.v &&
-			moons[1].p.y == startM2.p.y &&
-			moons[1].v == startM2.v &&
-			moons[2].p.y == startM3.p.y &&
-			moons[2].v == startM3.v &&
-			moons[3].p.y == startM4.p.y &&
-			moons[3].v == startM4.v &&
-			endYStep == 0 {
-			endYStep = steps
+		for _, initial := range initials {
+			if initial.Compare(moons) {
+				initial.SetDone(steps)
+			}
 		}
 
-		if moons[0].p.z == startM1.p.z &&
-			moons[0].v == startM1.v &&
-			moons[1].p.z == startM2.p.z &&
-			moons[1].v == startM2.v &&
-			moons[2].p.z == startM3.p.z &&
-			moons[2].v == startM3.v &&
-			moons[3].p.z == startM4.p.z &&
-			moons[3].v == startM4.v &&
-			endZStep == 0 {
-			endZStep = steps
-		}
-		steps++
-
-		if endXStep > 0 && endYStep > 0 && endZStep > 0 {
+		if allDone(initials) {
 			break
 		}
+
 	}
 
-	fmt.Println(lcm(endXStep, endYStep, endZStep))
-	return 0
+	counters := make([]int, 0)
+	for _, initial := range initials {
+		counters = append(counters, initial.Counter)
+	}
+
+	return lcm(counters...)
 }
 
 func abs(x int) int {
