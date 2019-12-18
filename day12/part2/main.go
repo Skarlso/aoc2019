@@ -107,13 +107,16 @@ func NewInitial(moons []*moon, shot ExtractFunc) *Initial {
 }
 
 func (c *Initial) Compare(moons []*moon) bool {
+	// we can say it's false to avoid calling SetDone again
+	// it's not cheating because statistically it's not true
+	// .... most of the time XD
+	if c.Done {
+		return false
+	}
 	return reflect.DeepEqual(snapshot(moons, c.Shot), c.Value)
 }
 
 func (c *Initial) SetDone(counter int) {
-	if c.Done {
-		return
-	}
 	c.Counter = counter
 	c.Done = true
 }
