@@ -55,11 +55,11 @@ func (m *moon) calculateTotalEnergy() int {
 func main() {
 	iterations := 1000
 	/*
-	<x=-15, y=1, z=4>
-	<x=1, y=-10, z=-8>
-	<x=-5, y=4, z=9>
-	<x=4, y=6, z=-2>
-	 */
+		<x=-15, y=1, z=4>
+		<x=1, y=-10, z=-8>
+		<x=-5, y=4, z=9>
+		<x=4, y=6, z=-2>
+	*/
 	moons := []*moon{
 		{0, position{-15, 1, 4}, position{0, 0, 0}},
 		{1, position{1, -10, -8}, position{0, 0, 0}},
@@ -67,32 +67,6 @@ func main() {
 		{3, position{4, 6, -2}, position{0, 0, 0}},
 	}
 	fmt.Println(runPart1(moons, iterations))
-}
-
-func generatePairs(moons []*moon) [][]*moon {
-	pairs := make([][]*moon, 0)
-	for i := 0; i < len(moons); i++ {
-		for j := 0; j < len(moons); j++ {
-			if moons[i].id == moons[j].id {
-				continue
-			}
-			pair := []*moon{moons[i], moons[j]}
-			// we don't insert 1,2 -> 2,1 because our gravity will apply the effect to the other pair as well
-			if !containsReversePair(pairs, pair) {
-				pairs = append(pairs, pair)
-			}
-		}
-	}
-	return pairs
-}
-
-func containsReversePair(pairs [][]*moon, pair []*moon) bool {
-	for _, p := range pairs {
-		if pair[0].id == p[1].id && pair[1].id == p[0].id {
-			return true
-		}
-	}
-	return false
 }
 
 // runPart1 returns the total energy in the system.
@@ -103,19 +77,14 @@ func runPart1(moons []*moon, iterations int) int {
 				moons[i].applyGravity(moons[j])
 			}
 		}
-
 		for _, m := range moons {
 			m.applyVelocity()
-			//fmt.Println(m)
 		}
-		//fmt.Printf("============= Iteration: %d =============\n", i)
 	}
 	sum := 0
-
 	for _, m := range moons {
 		sum += m.calculateTotalEnergy()
 	}
-
 	return sum
 }
 
