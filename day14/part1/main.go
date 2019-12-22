@@ -84,9 +84,7 @@ func generateResource(r string, n int) {
 		for k, v := range resource.reaction {
 			// If minusing the resource would bring it below it's level, add as much as needed to make it not belove the level
 			if nanofactory[k]-v < 0 {
-				for nanofactory[k] < v {
-					generateResource(k, v)
-				}
+				generateResource(k, v)
 			}
 			nanofactory[k] -= v
 		}
