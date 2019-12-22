@@ -69,6 +69,7 @@ func manifacture(lines [][]byte) {
 }
 
 func generateResource(r string, n int) {
+	//fmt.Println(nanofactory)
 	if r == "ORE" {
 		nanofactory["ORE"] += n
 		totalORE += n
@@ -79,9 +80,12 @@ func generateResource(r string, n int) {
 	}
 
 	resource := resources[r]
+
+	// Something about resource generation, or things getting not calculated.
+
 	// If there aren't enough resources we generate them recursively.
 	for k, v := range resource.reaction {
-		for nanofactory[k] < v {
+		for nanofactory[k] < v { // Amig nincs r-bol n mennyisegu addig kell futtatni? -> ennek kint kene lennie?
 			generateResource(k, v)
 		}
 		//if nanofactory[k] < v {
@@ -90,7 +94,11 @@ func generateResource(r string, n int) {
 	// if there are enough resources, we deduct that amount that the forumla needs
 	// and generate the resource.amount needed in the system.
 	for k, v := range resource.reaction {
-		nanofactory[k] -= v
+		//if nanofactory[k]-v < 0 {
+		//	generateResource(k, -(nanofactory[k] - v)) // nope ended up being more
+		//}
+		nanofactory[k] -= v // Nem mehetne 0 ala... If it goes beyond 0 generate as much as it doesn't got below it
+		// Also the problem is that it was able to geenerate 1 FUEL with on 11 ORE
 	}
 	// Generate `amount` resources.
 	nanofactory[resource.name] += resource.amount
