@@ -13,10 +13,9 @@ var resources = make(map[string]resourceElem)
 var totalORE int
 
 type resourceElem struct {
-	reaction         map[string]int
-	reactionsOrdered []string
-	amount           int
-	name             string
+	reaction map[string]int
+	amount   int
+	name     string
 }
 
 func main() {
@@ -49,7 +48,7 @@ func manifacture(lines [][]byte) {
 			d int
 		)
 		fmt.Sscanf(string(resource), "%d %s", &d, &r)
-		resourceStruct := resourceElem{amount: d, name: r, reaction: make(map[string]int), reactionsOrdered: make([]string, 0)}
+		resourceStruct := resourceElem{amount: d, name: r, reaction: make(map[string]int)}
 		nanofactory[resourceStruct.name] = 0
 		for _, react := range reactionSplit {
 			var (
@@ -58,18 +57,13 @@ func manifacture(lines [][]byte) {
 			)
 			fmt.Sscanf(string(react), "%d %s", &d, &r)
 			resourceStruct.reaction[r] = d
-			resourceStruct.reactionsOrdered = append(resourceStruct.reactionsOrdered, r)
 		}
-		// order the reactions by name
-
-		// ORE will neve appear on the right side because it cannot be generated.
 		resources[resourceStruct.name] = resourceStruct
 	}
 	generateResource("FUEL", 1)
 }
 
 func generateResource(r string, n int) {
-	//fmt.Println(nanofactory)
 	if r == "ORE" {
 		nanofactory["ORE"] += n
 		totalORE += n
@@ -80,26 +74,22 @@ func generateResource(r string, n int) {
 	}
 
 	resource := resources[r]
-
-	// Something about resource generation, or things getting not calculated.
-
 	// If there aren't enough resources we generate them recursively.
 	for k, v := range resource.reaction {
-		for nanofactory[k] < v { // Amig nincs r-bol n mennyisegu addig kell futtatni? -> ennek kint kene lennie?
+		for nanofactory[k] < v { // Amig nincs r-bol n mennyisegu addig kell futtatni
 			generateResource(k, v)
 		}
-		//if nanofactory[k] < v {
-		//}
 	}
 	// if there are enough resources, we deduct that amount that the forumla needs
 	// and generate the resource.amount needed in the system.
 	for k, v := range resource.reaction {
-		//if nanofactory[k]-v < 0 {
-		//	generateResource(k, -(nanofactory[k] - v)) // nope ended up being more
-		//}
-		nanofactory[k] -= v // Nem mehetne 0 ala... If it goes beyond 0 generate as much as it doesn't got below it
-		// Also the problem is that it was able to geenerate 1 FUEL with on 11 ORE
+		// If minusing the resource would bring it below it's level, add as much as needed to make it not belove the level
+		if nanofactory[k]-v < 0 {
+			for nanofactory[k] < v {
+				generateResource(k, v)
+			}
+		}
+		nanofactory[k] -= v
 	}
-	// Generate `amount` resources.
 	nanofactory[resource.name] += resource.amount
 }
