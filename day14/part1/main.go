@@ -13,9 +13,10 @@ var resources = make(map[string]resourceElem)
 var totalORE int
 
 type resourceElem struct {
-	reaction map[string]int
-	amount   int
-	name     string
+	reaction         map[string]int
+	reactionsOrdered []string
+	amount           int
+	name             string
 }
 
 func main() {
@@ -48,7 +49,7 @@ func manifacture(lines [][]byte) {
 			d int
 		)
 		fmt.Sscanf(string(resource), "%d %s", &d, &r)
-		resourceStruct := resourceElem{amount: d, name: r, reaction: make(map[string]int)}
+		resourceStruct := resourceElem{amount: d, name: r, reaction: make(map[string]int), reactionsOrdered: make([]string, 0)}
 		nanofactory[resourceStruct.name] = 0
 		for _, react := range reactionSplit {
 			var (
@@ -57,7 +58,10 @@ func manifacture(lines [][]byte) {
 			)
 			fmt.Sscanf(string(react), "%d %s", &d, &r)
 			resourceStruct.reaction[r] = d
+			resourceStruct.reactionsOrdered = append(resourceStruct.reactionsOrdered, r)
 		}
+		// order the reactions by name
+
 		// ORE will neve appear on the right side because it cannot be generated.
 		resources[resourceStruct.name] = resourceStruct
 	}
@@ -77,19 +81,17 @@ func generateResource(r string, n int) {
 	resource := resources[r]
 	// If there aren't enough resources we generate them recursively.
 	for k, v := range resource.reaction {
-		if nanofactory[k] < v {
+		for nanofactory[k] < v {
 			generateResource(k, v)
 		}
+		//if nanofactory[k] < v {
+		//}
 	}
-	nanofactory[resource.name] += resource.amount
 	// if there are enough resources, we deduct that amount that the forumla needs
 	// and generate the resource.amount needed in the system.
 	for k, v := range resource.reaction {
-		if nanofactory[k]-v > 0 {
-			nanofactory[k] -= v
-		} else {
-			nanofactory[k] = 0
-		}
+		nanofactory[k] -= v
 	}
 	// Generate `amount` resources.
+	nanofactory[resource.name] += resource.amount
 }
