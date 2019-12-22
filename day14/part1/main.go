@@ -75,21 +75,21 @@ func generateResource(r string, n int) {
 
 	resource := resources[r]
 	// If there aren't enough resources we generate them recursively.
-	for k, v := range resource.reaction {
-		for nanofactory[k] < v { // Amig nincs r-bol n mennyisegu addig kell futtatni
+	for nanofactory[r] < n { // Amig nincs r-bol n mennyisegu addig kell futtatni
+		for k, v := range resource.reaction {
 			generateResource(k, v)
 		}
-	}
-	// if there are enough resources, we deduct that amount that the forumla needs
-	// and generate the resource.amount needed in the system.
-	for k, v := range resource.reaction {
-		// If minusing the resource would bring it below it's level, add as much as needed to make it not belove the level
-		if nanofactory[k]-v < 0 {
-			for nanofactory[k] < v {
-				generateResource(k, v)
+		// if there are enough resources, we deduct that amount that the forumla needs
+		// and generate the resource.amount needed in the system.
+		for k, v := range resource.reaction {
+			// If minusing the resource would bring it below it's level, add as much as needed to make it not belove the level
+			if nanofactory[k]-v < 0 {
+				for nanofactory[k] < v {
+					generateResource(k, v)
+				}
 			}
+			nanofactory[k] -= v
 		}
-		nanofactory[k] -= v
+		nanofactory[resource.name] += resource.amount
 	}
-	nanofactory[resource.name] += resource.amount
 }
