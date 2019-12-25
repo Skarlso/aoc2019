@@ -11,7 +11,10 @@ import (
 )
 
 type point struct {
-	x, y int
+	x, y     int
+	distance int
+	rot      int
+	angle    float64
 }
 
 func main() {
@@ -36,43 +39,51 @@ func main() {
 		}
 		grid = append(grid, row)
 	}
-	mx := len(grid)
-	my := len(grid[0])
+	mx := 19 // from previous part1 this is the location of the station
+	my := 14
 	seen := make(map[float64][]point)
-	as := make([]float64, 0)
+	as := make([]point, 0)
 	for _, l := range meteorLocations {
 		if l.y != my || l.x != mx {
 			a := ((math.Atan2(float64(l.y-my), float64(l.x-mx))) * (180 / math.Pi))
-			// a := math.Floor(x*1000) / 1000
 			a += 90
 			if a < 0 {
 				a += 360
 			}
 
-			seen[a] = append(seen[a], point{y: l.y, x: l.x})
-			as = append(as, a)
+			d := abs(l.y-my) - abs(l.x-mx)
+			p := point{y: l.y, x: l.x, angle: a, distance: d}
+			seen[a] = append(seen[a], p)
+			as = append(as, p)
 		}
 	}
 
-	sort.Float64s(as)
-	for _, s := range seen {
-		sort.SliceStable(s, func(i, j int) bool {
-			return (abs(s[i].y-my) + abs(s[i].x-mx)) < (abs(s[j].y-my) + abs(s[j].x-mx))
-		})
-	}
-	count := 1
-loop:
-	for {
-		for _, s := range as {
-			var curr point
-			curr, seen[s] = seen[s][0], seen[s][1:]
-			if count == 200 {
-				fmt.Println((curr.x * 100) + curr.y)
-				break loop
-			}
-			count++
+	sort.SliceStable(as, func(i, j int) bool {
+		if as[i].angle == as[j].angle {
+			return as[i].distance < as[j].distance
 		}
+		return as[i].angle < as[j].angle
+	})
+	prev := -1.0
+	rot := 0
+	for i, r := range as {
+		if r.angle == prev {
+			rot++
+		} else {
+			rot = 0
+		}
+
+		as[i].rot = rot
+		prev = r.angle
 	}
+	sort.Slice(as, func(i, j int) bool {
+		if as[i].rot == as[j].rot {
+			return as[i].angle < as[j].angle
+		}
+		return as[i].rot < as[j].rot
+	})
+
+	fmt.Printf("%+v", as[199].x*100+as[199].y)
 }
 
 func abs(x int) int {

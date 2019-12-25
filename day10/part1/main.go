@@ -37,6 +37,7 @@ func main() {
 	}
 
 	max := 0
+	maxP := point{}
 	for _, l := range meteorLocations {
 		seen := make(map[float64]bool)
 
@@ -50,7 +51,9 @@ func main() {
 		}
 		if len(seen) > max {
 			max = len(seen)
+			maxP = l
 		}
 	}
 	fmt.Println("max: ", max)
+	fmt.Println("Loc: ", maxP)
 }
