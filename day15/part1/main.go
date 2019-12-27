@@ -2,9 +2,11 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"strconv"
+	"sync"
 
 	"github.com/Skarlso/intcode"
 )
@@ -26,6 +28,8 @@ type point struct {
 	x, y int
 }
 
+var syncMap sync.Map
+
 func main() {
 	filename := os.Args[1]
 	content, _ := ioutil.ReadFile(filename)
@@ -33,7 +37,6 @@ func main() {
 		content = content[:len(content)-1]
 	}
 	bytesArr := bytes.Split(content, []byte(","))
-
 	memory := make(map[int]int)
 	for i := 0; i < len(bytesArr); i++ {
 		n, _ := strconv.Atoi(string(bytesArr[i]))
@@ -50,6 +53,44 @@ func main() {
 	// seen ? copy the machine with its current state and go from there.
 	// I have to keep track of the already visited coordinates and somehow branch.
 	// I need to be able to clone the machine.
+	found := false
 	m := intcode.NewMachine(memory)
-	m.Clone()
+	var (
+		out  []int
+		loc  int
+		done bool
+	)
+	//explore(m)
+	// Start with North
+	in := []int{n}
+	m.Input = in
+	for {
+		clone := m.Clone()
+		out, done = clone.ProcessProgram()
+		loc, out = out[0], out[1:]
+		if loc == oxygen {
+			found = true
+			break
+		}
+		if done {
+			break
+		}
+
+		// If wall or seen, we don't go that way
+		// Only fork it if there are more than one possible ways.
+
+		switch loc {
+		case wall:
+
+		case moved:
+
+		}
+	}
+	if found {
+		fmt.Println("Oxygen found")
+	}
+}
+
+func explore(m *intcode.Machine) {
+
 }

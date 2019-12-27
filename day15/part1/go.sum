@@ -1,2 +1,4 @@
 github.com/Skarlso/intcode v0.0.0-20191225154455-14a61d832aa8 h1:HaZ+aSXIDwIhG5uKtrIXrEN0J75A2X0chnzjpQBpn0k=
 github.com/Skarlso/intcode v0.0.0-20191225154455-14a61d832aa8/go.mod h1:T4rEHsNyAhYf1KqYGc2qyk4XrC0qQY7PY31XV8AUeUc=
+github.com/Skarlso/intcode v0.0.0-20191227144348-1e51dd055fd2 h1:is4vZHKavHRdb/N9J9/JmEHeK8KTqeOk/5eF7CwLj18=
+github.com/Skarlso/intcode v0.0.0-20191227144348-1e51dd055fd2/go.mod h1:T4rEHsNyAhYf1KqYGc2qyk4XrC0qQY7PY31XV8AUeUc=
