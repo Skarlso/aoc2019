@@ -3,10 +3,11 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"github.com/Skarlso/intcode"
 	"io/ioutil"
 	"os"
 	"strconv"
+
+	"github.com/Skarlso/intcode"
 )
 
 const (
@@ -61,9 +62,10 @@ func main() {
 	m.Input = in
 	// start by going up from position 0, 0
 	found := explore(m, point{y: 0, x: 0})
-
 	if found {
 		fmt.Println("Oxygen found")
+	} else {
+		fmt.Println("Nope")
 	}
 }
 
@@ -71,36 +73,46 @@ func explore(m *intcode.Machine, currentPosition point) bool {
 	var (
 		found bool
 	)
+	clone := m.Clone()
 	for {
-		clone := m.Clone()
 		possibleMoves := make([]int, 0)
 		for k, d := range directions {
 			c := clone.Clone()
 			c.Input = []int{k}
 			out, done := c.ProcessProgram()
 			if done {
+				fmt.Println("It finished running, and out is: ", out)
 				return out[0] == oxygen
 			}
 			if out[0] == oxygen {
 				return true
 			}
 			p := point{y: currentPosition.y + d.y, x: currentPosition.x + d.x}
+			fmt.Println("Point is: ", p)
+			fmt.Println("Out is: ", out)
 			if _, ok := seen[p]; !ok && out[0] != wall {
+				fmt.Println("Not a wall and have not seen it yet... Adding to moves.")
 				seen[p] = true
 				possibleMoves = append(possibleMoves, k)
 			}
 		}
+		fmt.Println("Possible moves: ", possibleMoves)
 
 		// if there is only one possible move, we move
 		if len(possibleMoves) == 0 {
 			// no more moves left
+			fmt.Println("No more moves left...")
 			return found
 		} else if len(possibleMoves) == 1 {
-			clone.Input = []int{possibleMoves[0]}
+			d := possibleMoves[0]
+			clone.Input = []int{d}
 			// We don't care about the return because the clone
 			// already tried it and if they would be an end
 			// the clone would already have ended
 			clone.ProcessProgram()
+			// Update the location we moved to.
+			currentPosition.y += directions[d].y
+			currentPosition.x += directions[d].x
 		} else if len(possibleMoves) > 1 {
 			// We move in all directions
 			for _, d := range possibleMoves {
@@ -111,5 +123,4 @@ func explore(m *intcode.Machine, currentPosition point) bool {
 			}
 		}
 	}
-	return found
 }
