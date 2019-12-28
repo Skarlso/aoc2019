@@ -18,7 +18,7 @@ const (
 )
 
 const (
-	debug = true
+	debug = false
 )
 
 const (
@@ -127,12 +127,14 @@ func explore(m *intcode.Machine, currentPosition point) bool {
 		} else if len(possibleMoves) > 1 {
 			// We move in all directions
 			for _, d := range possibleMoves {
-				logDebug("Recurring through multiple ways.")
-				found = explore(&clone, point{y: currentPosition.y + directions[d].y, x: currentPosition.x + directions[d].x})
-			}
-			if found {
-				//fmt.Println("Found the oxygen!!")
-				return found
+				c := clone.Clone()
+				c.Input = []int{d}
+				c.ProcessProgram()
+				found = explore(&c, point{y: currentPosition.y + directions[d].y, x: currentPosition.x + directions[d].x})
+				if found {
+					//fmt.Println("Found the oxygen!!")
+					return found
+				}
 			}
 		}
 	}
