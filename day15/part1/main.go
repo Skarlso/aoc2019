@@ -18,6 +18,10 @@ const (
 )
 
 const (
+	debug = true
+)
+
+const (
 	wall = iota
 	moved
 	oxygen
@@ -36,6 +40,12 @@ var directions = map[int]point{
 	s: {y: 1, x: 0},
 	w: {y: 0, x: -1},
 	e: {y: 0, x: 1},
+}
+
+func logDebug(args ...interface{}) {
+	if debug {
+		fmt.Println(args...)
+	}
 }
 
 func main() {
@@ -81,28 +91,28 @@ func explore(m *intcode.Machine, currentPosition point) bool {
 			c.Input = []int{k}
 			out, done := c.ProcessProgram()
 			if done {
-				//fmt.Println("It finished running, and out is: ", out)
+				logDebug("It finished running, and out is: ", out)
 				return out[0] == oxygen
 			}
 			if out[0] == oxygen {
-				//fmt.Println("Found the oxygen!!")
+				fmt.Println("Found the oxygen!!")
 				return true
 			}
 			p := point{y: currentPosition.y + d.y, x: currentPosition.x + d.x}
-			//fmt.Println("Point is: ", p)
-			//fmt.Println("Out is: ", out)
+			logDebug("Point is: ", p)
+			logDebug("Out is: ", out)
 			if _, ok := seen[p]; !ok && out[0] != wall {
-				//fmt.Println("Not a wall and have not seen it yet... Adding to moves.")
+				logDebug("Not a wall and have not seen it yet... Adding to moves.")
 				seen[p] = true
 				possibleMoves = append(possibleMoves, k)
 			}
 		}
-		//fmt.Println("Possible moves: ", possibleMoves)
+		logDebug("Possible moves: ", possibleMoves)
 
 		// if there is only one possible move, we move
 		if len(possibleMoves) == 0 {
 			// no more moves left
-			//fmt.Println("No more moves left...")
+			logDebug("No more moves left...")
 			return found
 		} else if len(possibleMoves) == 1 {
 			d := possibleMoves[0]
@@ -117,15 +127,12 @@ func explore(m *intcode.Machine, currentPosition point) bool {
 		} else if len(possibleMoves) > 1 {
 			// We move in all directions
 			for _, d := range possibleMoves {
-				//fmt.Println("Recursing through multiple ways.")
-				c := clone.Clone()
-				c.Input = []int{d}
-				c.ProcessProgram()
-				found = explore(&c, point{y: currentPosition.y + directions[d].y, x: currentPosition.x + directions[d].x})
-				if found {
-					//fmt.Println("Found the oxygen!!")
-					return found
-				}
+				logDebug("Recurring through multiple ways.")
+				found = explore(&clone, point{y: currentPosition.y + directions[d].y, x: currentPosition.x + directions[d].x})
+			}
+			if found {
+				//fmt.Println("Found the oxygen!!")
+				return found
 			}
 		}
 	}
