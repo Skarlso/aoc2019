@@ -118,11 +118,14 @@ func explore(m *intcode.Machine, currentPosition point) bool {
 			// We move in all directions
 			for _, d := range possibleMoves {
 				//fmt.Println("Recursing through multiple ways.")
-				found = explore(&clone, point{y: currentPosition.y + directions[d].y, x: currentPosition.x + directions[d].x})
-			}
-			if found {
-				//fmt.Println("Found the oxygen!!")
-				return found
+				c := clone.Clone()
+				c.Input = []int{d}
+				c.ProcessProgram()
+				found = explore(&c, point{y: currentPosition.y + directions[d].y, x: currentPosition.x + directions[d].x})
+				if found {
+					//fmt.Println("Found the oxygen!!")
+					return found
+				}
 			}
 		}
 	}
