@@ -66,7 +66,6 @@ func main() {
 	// I need to be able to clone the machine.
 	m := intcode.NewMachine(memory)
 
-	//explore(m)
 	// Start with North
 	in := []int{n}
 	m.Input = in
@@ -74,68 +73,43 @@ func main() {
 	explore(m, point{y: 0, x: 0})
 	fmt.Println("Oxygen location at: ", oxygenLocation)
 
-	// The farthest path will be how long it takes.
-	//points := make([]point, 0)
-	//for p := range seen {
-	//	points = append(points, p)
-	//}
-	//sort.SliceStable(points, func(i, j int) bool {
-	//	if points[i].x == points[j].x {
-	//		return points[i].y < points[j].y
-	//	}
-	//	return points[i].x < points[j].x
-	//})
-
-	//columnCount := 0
-	//for p := range seen {
-	//	if columnCount == 40 {
-	//		fmt.Println()
-	//		columnCount = 0
-	//	}
-	//	//fmt.Println(p)
-	//	switch seen[p] {
-	//	case wall:
-	//		fmt.Print("#")
-	//	case oxygen:
-	//		fmt.Print("O")
-	//	case moved:
-	//		fmt.Print(".")
-	//	}
-	//	columnCount++
-	//}
-
-	// For each point, get the path to that point from oxygen
-
-	// number of steps to that point
-	paths := make([]int, 0)
+	max := 0
 	for p, cell := range seen {
-		if cell == wall || cell == oxygen {
+		if cell != moved {
 			continue
 		}
-		count := 0
 		start := p
-		dfsSeen := map[point]bool{
-			start: true,
+		cameFrom := map[point]point{
+			start: start,
 		}
 		path := []point{start}
 		curr := point{}
 		for len(path) > 0 {
 			curr, path = path[0], path[1:]
 			if curr == oxygenLocation {
-				paths = append(paths, count)
 				break
 			}
 			for _, next := range moves(curr) {
-				if _, ok := dfsSeen[next]; !ok {
-					dfsSeen[next] = true
+				if _, ok := cameFrom[next]; !ok {
+					cameFrom[next] = curr
 					path = append(path, next)
-					count++
 				}
 			}
 		}
+
+		// Count the steps that it took to get there.
+		count := 0
+		current := oxygenLocation
+		for current != start {
+			current = cameFrom[current]
+			count++
+		}
+		if count > max {
+			max = count
+		}
 	}
 
-	fmt.Println(paths)
+	fmt.Println(max) // Furthest position in the maze.
 }
 
 
