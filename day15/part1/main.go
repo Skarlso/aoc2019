@@ -71,15 +71,15 @@ func main() {
 	in := []int{n}
 	m.Input = in
 	// start by going up from position 0, 0
-	found := explore(m, point{y: 0, x: 0})
+	count, found := explore(m, point{y: 0, x: 0})
 	if found {
-		fmt.Println("Oxygen found")
+		fmt.Println("Oxygen found after steps: ", count)
 	} else {
 		fmt.Println("Nope")
 	}
 }
 
-func explore(m *intcode.Machine, currentPosition point) bool {
+func explore(m *intcode.Machine, currentPosition point) (int, bool) {
 	var (
 		found bool
 	)
@@ -90,13 +90,14 @@ func explore(m *intcode.Machine, currentPosition point) bool {
 			c := clone.Clone()
 			c.Input = []int{k}
 			out, done := c.ProcessProgram()
+			c.InstructionCount++
 			if done {
 				logDebug("It finished running, and out is: ", out)
-				return out[0] == oxygen
+				return c.InstructionCount, out[0] == oxygen
 			}
 			if out[0] == oxygen {
 				fmt.Println("Found the oxygen!!")
-				return true
+				return c.InstructionCount, true
 			}
 			p := point{y: currentPosition.y + d.y, x: currentPosition.x + d.x}
 			logDebug("Point is: ", p)
@@ -113,27 +114,30 @@ func explore(m *intcode.Machine, currentPosition point) bool {
 		if len(possibleMoves) == 0 {
 			// no more moves left
 			logDebug("No more moves left...")
-			return found
+			return clone.InstructionCount, found
 		} else if len(possibleMoves) == 1 {
 			d := possibleMoves[0]
 			clone.Input = []int{d}
 			// We don't care about the return because the clone
 			// already tried it and if they would be an end
 			// the clone would already have ended
+			clone.InstructionCount++
 			clone.ProcessProgram()
 			// Update the location we moved to.
 			currentPosition.y += directions[d].y
 			currentPosition.x += directions[d].x
 		} else if len(possibleMoves) > 1 {
+			count := 0
 			// We move in all directions
 			for _, d := range possibleMoves {
 				c := clone.Clone()
 				c.Input = []int{d}
 				c.ProcessProgram()
-				found = explore(&c, point{y: currentPosition.y + directions[d].y, x: currentPosition.x + directions[d].x})
+				c.InstructionCount++
+				count, found = explore(&c, point{y: currentPosition.y + directions[d].y, x: currentPosition.x + directions[d].x})
 				if found {
 					//fmt.Println("Found the oxygen!!")
-					return found
+					return count, found
 				}
 			}
 		}
