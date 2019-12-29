@@ -31,8 +31,8 @@ type point struct {
 	x, y int
 }
 
-var seen = map[point]bool{
-	{0, 0}: true,
+var seen = map[point]int{
+	{0, 0}: moved,
 }
 
 var directions = map[int]point{
@@ -72,19 +72,88 @@ func main() {
 	m.Input = in
 	// start by going up from position 0, 0
 	explore(m, point{y: 0, x: 0})
-	if found {
-		fmt.Println("Oxygen found after steps: ", count)
-	} else {
-		fmt.Println("Nope")
+	fmt.Println("Oxygen location at: ", oxygenLocation)
+
+	// The farthest path will be how long it takes.
+	//points := make([]point, 0)
+	//for p := range seen {
+	//	points = append(points, p)
+	//}
+	//sort.SliceStable(points, func(i, j int) bool {
+	//	if points[i].x == points[j].x {
+	//		return points[i].y < points[j].y
+	//	}
+	//	return points[i].x < points[j].x
+	//})
+
+	//columnCount := 0
+	//for p := range seen {
+	//	if columnCount == 40 {
+	//		fmt.Println()
+	//		columnCount = 0
+	//	}
+	//	//fmt.Println(p)
+	//	switch seen[p] {
+	//	case wall:
+	//		fmt.Print("#")
+	//	case oxygen:
+	//		fmt.Print("O")
+	//	case moved:
+	//		fmt.Print(".")
+	//	}
+	//	columnCount++
+	//}
+
+	// For each point, get the path to that point from oxygen
+
+	// number of steps to that point
+	paths := make([]int, 0)
+	for p, cell := range seen {
+		if cell == wall || cell == oxygen {
+			continue
+		}
+		count := 0
+		start := p
+		dfsSeen := map[point]bool{
+			start: true,
+		}
+		path := []point{start}
+		curr := point{}
+		for len(path) > 0 {
+			curr, path = path[0], path[1:]
+			if curr == oxygenLocation {
+				paths = append(paths, count)
+				break
+			}
+			for _, next := range moves(curr) {
+				if _, ok := dfsSeen[next]; !ok {
+					dfsSeen[next] = true
+					path = append(path, next)
+					count++
+				}
+			}
+		}
 	}
+
+	fmt.Println(paths)
 }
+
+
+func moves(p point) []point {
+	ret := make([]point, 0)
+	for _, d := range directions {
+		next := point {x: p.x + d.x, y: p.y + d.y}
+		if seen[next] != wall { // include oxygen
+			ret = append(ret, next)
+		}
+	}
+	return ret
+}
+
 
 var oxygenLocation point
 
 func explore(m *intcode.Machine, currentPosition point) {
-	var (
-		found bool
-	)
 	clone := m.Clone()
 	for {
 		possibleMoves := make([]int, 0)
@@ -101,13 +170,16 @@ func explore(m *intcode.Machine, currentPosition point) {
 			if out[0] == oxygen {
 				fmt.Println("Found the oxygen!!")
 				oxygenLocation = p
+				//seen[p] = oxygen
 			}
 			logDebug("Point is: ", p)
 			logDebug("Out is: ", out)
 			if _, ok := seen[p]; !ok && out[0] != wall {
 				logDebug("Not a wall and have not seen it yet... Adding to moves.")
-				seen[p] = true
+				seen[p] = out[0]
 				possibleMoves = append(possibleMoves, k)
+			} else if out[0] == wall {
+				seen[p] = out[0]
 			}
 		}
 		logDebug("Possible moves: ", possibleMoves)
@@ -116,7 +188,7 @@ func explore(m *intcode.Machine, currentPosition point) {
 		if len(possibleMoves) == 0 {
 			// no more moves left
 			logDebug("No more moves left...")
-			return found
+			return
 		} else if len(possibleMoves) == 1 {
 			d := possibleMoves[0]
 			clone.Input = []int{d}
@@ -136,11 +208,7 @@ func explore(m *intcode.Machine, currentPosition point) {
 				c.Input = []int{d}
 				c.ProcessProgram()
 				p := point{y: currentPosition.y + directions[d].y, x: currentPosition.x + directions[d].x}
-				found = explore(&c, p)
-				if found {
-					fmt.Println("Found the oxygen at location: ", p)
-					//return count, found
-				}
+				explore(&c, p)
 			}
 		}
 	}

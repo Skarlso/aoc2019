@@ -95,11 +95,11 @@ func explore(m *intcode.Machine, currentPosition point) (int, bool) {
 				logDebug("It finished running, and out is: ", out)
 				return c.InstructionCount, out[0] == oxygen
 			}
+			p := point{y: currentPosition.y + d.y, x: currentPosition.x + d.x}
 			if out[0] == oxygen {
-				fmt.Println("Found the oxygen!!")
+				fmt.Println("Found the oxygen at: ", p)
 				return c.InstructionCount, true
 			}
-			p := point{y: currentPosition.y + d.y, x: currentPosition.x + d.x}
 			logDebug("Point is: ", p)
 			logDebug("Out is: ", out)
 			if _, ok := seen[p]; !ok && out[0] != wall {
