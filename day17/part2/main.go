@@ -27,40 +27,20 @@ func main() {
 		n, _ := strconv.Atoi(string(bytesArr[i]))
 		memory[i] = n
 	}
-
+	memory[0] = 2 // Wake up the robot
 	m := intcode.NewMachine(memory)
 	m.Input = []int{0}
-	out, _ := m.ProcessProgram()
-	// if done {
-	// 	display(out)
-	// }
 	var (
-		grid = make(map[point]int)
-		x, y int
+		out  []int
+		done bool
+		// grid = make(map[point]int)
+		// x, y int
 	)
-	for _, v := range out {
-		grid[point{x: x, y: y}] = v
-		switch v {
-		case 10:
-			y++
-			x = 0
-		case 35:
-			x++
-		case 46:
-			x++
-		}
+
+	for !done {
+		out, done = m.ProcessProgram()
+		display(out)
 	}
-	sum := 0
-	for k, v := range grid {
-		if v == 35 {
-			// check up, right, down, left
-			if grid[point{x: k.x, y: k.y - 1}] == 35 && grid[point{x: k.x + 1, y: k.y}] == 35 && grid[point{x: k.x, y: k.y + 1}] == 35 && grid[point{x: k.x - 1, y: k.y}] == 35 {
-				sum += k.x * k.y
-				grid[k] = 'O'
-			}
-		}
-	}
-	fmt.Println(sum)
 }
 
 func display(out []int) {
