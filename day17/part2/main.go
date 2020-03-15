@@ -60,6 +60,7 @@ func main() {
 			provideInput = false
 		}
 	}
+	fmt.Println(out) // Large output at the end contains the space dust it ate.
 }
 
 func convertToString(out []int) (s string) {
