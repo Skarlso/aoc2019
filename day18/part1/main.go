@@ -20,6 +20,12 @@ type point struct {
 	x, y int
 }
 
+type bot struct {
+	loc   point
+	keys  map[byte]struct{}
+	steps int
+}
+
 var directions = []point{
 	{y: -1, x: 0},
 	{y: 1, x: 0},
@@ -27,21 +33,41 @@ var directions = []point{
 	{y: 0, x: 1},
 }
 
-func walk(current point, maze []string, keys map[byte]struct{}) []point {
+func (b *bot) walk(maze []string) []bot {
 	moves := make([]point, 0)
 	for _, d := range directions {
-		next := point{x: current.x + d.x, y: current.y + d.y}
+		next := point{x: b.loc.x + d.x, y: b.loc.y + d.y}
 		if maze[next.y][next.x] != '#' {
 			if unicode.IsUpper(rune(maze[next.y][next.x])) {
-				if _, ok := keys[byte(unicode.ToLower(rune(maze[next.y][next.x])))]; ok {
+				if _, ok := b.keys[byte(unicode.ToLower(rune(maze[next.y][next.x])))]; ok {
 					moves = append(moves, next)
 				}
+			} else if unicode.IsLower(rune(maze[next.y][next.x])) {
+				b.keys[maze[next.y][next.x]] = struct{}{}
+				moves = append(moves, next)
 			} else {
 				moves = append(moves, next)
 			}
 		}
 	}
-	return moves
+	bots := make([]bot, 0)
+	for _, m := range moves {
+		newBot := b.clone()
+		newBot.loc = m
+		bots = append(bots, newBot)
+	}
+	return bots
+}
+
+func (b *bot) clone() bot {
+	a := &bot{}
+	a.keys = make(map[byte]struct{})
+	for k, v := range b.keys {
+		a.keys[k] = v
+	}
+	a.loc = b.loc
+	a.steps = b.steps
+	return *a
 }
 
 func main() {
@@ -76,31 +102,21 @@ func main() {
 	}
 	fmt.Printf("There are %d number of keys in this maze.", allKeysCount)
 
+	starterBot := bot{loc: start, keys: make(map[byte]struct{})}
 	// End goal is to visit all locations for now. But in fact, if we don't find any new keys, I guess.
 	// We first, have to collect all keys and then keep track if we have them all.
-	keys := make(map[byte]struct{})
-	seen := make(map[point]struct{})
-	queue := []point{start}
-	var current point
-	var steps int
-
+	queue := []bot{starterBot}
+	var current bot
 	fmt.Println()
+	// Keep track of the bots? But how?
+	// endless loop until all keys are found
 	for len(queue) > 0 {
 		current, queue = queue[0], queue[1:]
-		fmt.Print(string(maze[current.y][current.x]))
-		if _, ok := seen[current]; !ok {
-			seen[current] = struct{}{}
-			if unicode.IsLower(rune(maze[current.y][current.x])) {
-				keys[maze[current.y][current.x]] = struct{}{}
-			}
-			for _, next := range walk(current, maze, keys) {
-				if _, ok := seen[next]; !ok {
-					queue = append(queue, next)
-					steps++
-				}
-			}
+		if len(current.keys) == allKeysCount {
+			fmt.Printf("The first bot which found all the keys took %d steps.\n", current.steps)
+			break
 		}
+		queue = append(queue, current.walk(maze)...)
 	}
 	fmt.Println()
-	fmt.Println("Number of steps: ", steps)
 }
